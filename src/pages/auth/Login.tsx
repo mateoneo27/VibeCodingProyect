@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, getUserRole } from '../../lib/services';
 import { supabase } from '../../lib/supabase';
@@ -56,7 +56,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="usuario@neo.com.pe"
-                  className="w-full bg-[#EEEDF6] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#0A29CD] focus:bg-white transition-all outline-none text-[#000033]"
+                  className="w-full bg-[#f6f5fa] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#0A29CD] focus:bg-white transition-all outline-none text-[#000033]"
                 />
               </div>
 
@@ -70,7 +70,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full bg-[#EEEDF6] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#0A29CD] focus:bg-white transition-all outline-none text-[#000033]"
+                  className="w-full bg-[#f6f5fa] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#0A29CD] focus:bg-white transition-all outline-none text-[#000033]"
                 />
               </div>
 

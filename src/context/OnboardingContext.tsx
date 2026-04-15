@@ -21,6 +21,7 @@ const defaultDatosPersonales: DatosPersonales = {
   edad: '',
   correo: '',
   direccion: '',
+  sexo: '',
 };
 
 const defaultOncosalud: BeneficioOncosalud = {

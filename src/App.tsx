@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { OnboardingProvider } from './context/OnboardingContext';
 import { useOnboarding } from './context/OnboardingContext';
@@ -43,8 +43,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/** Onboarding guard — if the user already completed the process, redirect to /completado?ya=1 */
-function OnboardingRoute({ children }: { children: React.ReactNode }) {
+/** Onboarding guard — if the user already completed the process, redirect to /completado?ya=1.
+ *  Used as a layout route so it mounts only once and avoids repeated API calls on every page change. */
+function OnboardingRoute() {
   const { user, loading } = useAuth();
   const { loadAll } = useOnboarding();
   const [checking, setChecking] = useState(true);
@@ -80,7 +81,7 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   if (loading || checking) return <LoadingSpinner />;
   if (!user) return <Navigate to="/auth/login" replace />;
   if (completed) return <Navigate to="/completado?ya=1" replace />;
-  return <>{children}</>;
+  return <Outlet />;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -100,21 +101,23 @@ function AppRoutes() {
       <Route path="/auth/register" element={<Navigate to="/auth/login" replace />} />
 
       {/* Protected — general */}
-      <Route path="/tipo-usuario" element={<OnboardingRoute><TipoUsuario /></OnboardingRoute>} />
       <Route path="/completado" element={<ProtectedRoute><ProcesoCompleto /></ProtectedRoute>} />
 
-      {/* Planilla flow */}
-      <Route path="/planilla/datos-personales" element={<OnboardingRoute><P1_DatosPersonales /></OnboardingRoute>} />
-      <Route path="/planilla/eps"              element={<OnboardingRoute><P2_BeneficioEPS /></OnboardingRoute>} />
-      <Route path="/planilla/oncosalud"        element={<OnboardingRoute><P3_Oncosalud /></OnboardingRoute>} />
-      <Route path="/planilla/examen-medico"    element={<OnboardingRoute><P4_ExamenMedico /></OnboardingRoute>} />
-      <Route path="/planilla/revision"         element={<OnboardingRoute><P5_Revision /></OnboardingRoute>} />
-
-      {/* Trainee flow */}
-      <Route path="/trainee/datos-personales" element={<OnboardingRoute><T1_DatosPersonales /></OnboardingRoute>} />
-      <Route path="/trainee/fola"             element={<OnboardingRoute><T2_BeneficioFOLA /></OnboardingRoute>} />
-      <Route path="/trainee/oncosalud"        element={<OnboardingRoute><T3_Oncosalud /></OnboardingRoute>} />
-      <Route path="/trainee/revision"         element={<OnboardingRoute><T4_Revision /></OnboardingRoute>} />
+      {/* Onboarding flow — single guard mounts once, avoids repeated API calls on navigation */}
+      <Route element={<OnboardingRoute />}>
+        <Route path="/tipo-usuario"               element={<TipoUsuario />} />
+        {/* Planilla flow */}
+        <Route path="/planilla/datos-personales"  element={<P1_DatosPersonales />} />
+        <Route path="/planilla/eps"               element={<P2_BeneficioEPS />} />
+        <Route path="/planilla/oncosalud"         element={<P3_Oncosalud />} />
+        <Route path="/planilla/examen-medico"     element={<P4_ExamenMedico />} />
+        <Route path="/planilla/revision"          element={<P5_Revision />} />
+        {/* Trainee flow */}
+        <Route path="/trainee/datos-personales"   element={<T1_DatosPersonales />} />
+        <Route path="/trainee/fola"               element={<T2_BeneficioFOLA />} />
+        <Route path="/trainee/oncosalud"          element={<T3_Oncosalud />} />
+        <Route path="/trainee/revision"           element={<T4_Revision />} />
+      </Route>
 
       {/* Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

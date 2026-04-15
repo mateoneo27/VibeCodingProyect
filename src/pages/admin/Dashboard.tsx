@@ -59,6 +59,29 @@ function buildOncoGmailUrl(s: FirestoreSubmission): string {
   return `https://mail.google.com/mail/?view=cm&${params.toString()}`;
 }
 
+// ── Welcome email ─────────────────────────────────────────────────────────────
+
+function buildWelcomeGmailUrl(email: string): string {
+  const body =
+    `¡Hola!\n\n` +
+    `Nos alegra mucho darte la bienvenida al equipo de NEO. Estamos entusiasmados de que formes parte de este nuevo reto con nosotros.\n\n` +
+    `Como primer paso, hemos preparado un espacio de pre-onboarding, diseñado para acompañarte en tu proceso de integración desde el inicio.\n\n` +
+    `En este espacio podrás conocer aspectos clave para que tu incorporación sea más ágil, clara y alineada con el equipo.\n\n` +
+    `Para acceder, solo debes seguir estos pasos:\n\n` +
+    `• Ingresa al siguiente enlace: https://vibe-coding-proyect.vercel.app/\n` +
+    `• Usuario: ${email}\n` +
+    `• Contraseña: 123456\n\n` +
+    `Te invitamos a revisar este contenido antes de tu inicio, ya que te ayudará a integrarte de manera más ágil.\n\n` +
+    `¡Estamos seguros de que será una gran experiencia juntos!\n` +
+    `Equipo NEO`;
+  const params = new URLSearchParams({
+    to:   email,
+    su:   '¡Bienvenido/a al equipo NEO! 🚀',
+    body,
+  });
+  return `https://mail.google.com/mail/?view=cm&${params.toString()}`;
+}
+
 // ── Reusable field components ─────────────────────────────────────────────────
 
 const inputCls = 'w-full bg-[#F6F5FA] border border-[#B3B3C2]/40 rounded-xl px-4 py-2.5 text-sm text-[#000033] placeholder:text-[#9999AD] focus:outline-none focus:ring-2 focus:ring-[#0A29CD]/30 focus:border-[#0A29CD] transition-all';
@@ -546,6 +569,8 @@ function AddUserModal({ onClose }: { onClose: () => void }) {
       }
 
       setCreated(true);
+      // Open Gmail compose automatically — same event stack so popup blockers allow it.
+      window.open(buildWelcomeGmailUrl(email), '_blank', 'noopener,noreferrer');
     } catch (err) {
       const msg = (err as Error).message ?? '';
       if (msg.includes('abort') || msg.includes('timeout')) {

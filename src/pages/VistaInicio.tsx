@@ -19,7 +19,7 @@ export default function VistaInicio() {
 
               <div className="space-y-4">
                 <p className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-[#4D4D70]">
-                  ¡Bienvenido al equipo!
+                  ¡Bienvenido(a) al equipo!
                 </p>
                 <img src="/logo_neo.png" alt="NEO" className="h-16 md:h-20 w-auto" />
               </div>
@@ -47,8 +47,8 @@ export default function VistaInicio() {
             <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
               {[
                 { icon: 'verified', title: 'Integridad', desc: 'Actuamos con honestidad y transparencia en cada paso.', color: 'text-[#0A29CD]', bg: 'bg-[#0A29CD]/10', accent: '#49C7FD' },
-                { icon: 'auto_stories', title: 'Aprendizaje', desc: 'Crecemos todos los días a través de la curiosidad.', color: 'text-[#000033]', bg: 'bg-[#56E976]/20', accent: '#56E976' },
-                { icon: 'ads_click', title: 'Resultados', desc: 'Impactamos positivamente en nuestros objetivos.', color: 'text-[#4D4D70]', bg: 'bg-[#FFEE53]/30', accent: '#FFEE53' },
+                { icon: 'auto_stories', title: 'Aprendizaje constante', desc: 'Crecemos todos los días a través de la curiosidad.', color: 'text-[#000033]', bg: 'bg-[#56E976]/20', accent: '#56E976' },
+                { icon: 'ads_click', title: 'Orientación a resultados', desc: 'Impactamos positivamente en nuestros objetivos.', color: 'text-[#4D4D70]', bg: 'bg-[#FFEE53]/30', accent: '#FFEE53' },
                 { icon: 'biotech', title: 'Experimentación', desc: 'No tememos fallar, amamos descubrir nuevas formas.', color: 'text-[#0A29CD]', bg: 'bg-[#49C7FD]/20', accent: '#49C7FD' },
               ].map((card) => (
                 <div

@@ -12,6 +12,7 @@ export interface DatosPersonales {
   edad: number | '';
   correo: string;
   direccion: string;
+  sexo: string;
 }
 
 export interface BeneficioEPS {
