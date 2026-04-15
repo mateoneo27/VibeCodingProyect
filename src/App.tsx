@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { OnboardingProvider } from './context/OnboardingContext';
+import { useOnboarding } from './context/OnboardingContext';
 import { useAuth } from './hooks/useAuth';
+import { getOnboardingData, isOnboardingComplete } from './lib/services';
 
 // Pages
 import VistaInicio from './pages/VistaInicio';
 import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
 import TipoUsuario from './pages/TipoUsuario';
 import ProcesoCompleto from './pages/ProcesoCompleto';
 
@@ -27,16 +29,57 @@ import AdminDashboard from './pages/admin/Dashboard';
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f9f9ff]">
-      <div className="w-10 h-10 border-4 border-[#00478d] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-[#F6F5FA]">
+      <div className="w-10 h-10 border-4 border-[#0A29CD] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
 
+/** Basic auth guard — redirects to login if not authenticated */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/auth/login" replace />;
+  return <>{children}</>;
+}
+
+/** Onboarding guard — if the user already completed the process, redirect to /completado?ya=1 */
+function OnboardingRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { loadAll } = useOnboarding();
+  const [checking, setChecking] = useState(true);
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setChecking(false); return; }
+    const currentUser = user;
+    let cancelled = false;
+
+    async function checkStatusAndLoadData() {
+      setChecking(true);
+      try {
+        const [done, data] = await Promise.all([
+          isOnboardingComplete(currentUser.id),
+          getOnboardingData(currentUser.id),
+        ]);
+        if (cancelled) return;
+        setCompleted(done);
+        if (data) loadAll(data);
+      } catch (e) {
+        console.error('Error cargando estado de onboarding:', e);
+        if (!cancelled) setCompleted(false);
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    }
+
+    checkStatusAndLoadData();
+    return () => { cancelled = true; };
+  }, [user, loadAll]);
+
+  if (loading || checking) return <LoadingSpinner />;
+  if (!user) return <Navigate to="/auth/login" replace />;
+  if (completed) return <Navigate to="/completado?ya=1" replace />;
   return <>{children}</>;
 }
 
@@ -54,24 +97,24 @@ function AppRoutes() {
       {/* Public */}
       <Route path="/" element={<VistaInicio />} />
       <Route path="/auth/login" element={<Login />} />
-      <Route path="/auth/register" element={<Register />} />
+      <Route path="/auth/register" element={<Navigate to="/auth/login" replace />} />
 
       {/* Protected — general */}
-      <Route path="/tipo-usuario" element={<ProtectedRoute><TipoUsuario /></ProtectedRoute>} />
+      <Route path="/tipo-usuario" element={<OnboardingRoute><TipoUsuario /></OnboardingRoute>} />
       <Route path="/completado" element={<ProtectedRoute><ProcesoCompleto /></ProtectedRoute>} />
 
       {/* Planilla flow */}
-      <Route path="/planilla/datos-personales" element={<ProtectedRoute><P1_DatosPersonales /></ProtectedRoute>} />
-      <Route path="/planilla/eps" element={<ProtectedRoute><P2_BeneficioEPS /></ProtectedRoute>} />
-      <Route path="/planilla/oncosalud" element={<ProtectedRoute><P3_Oncosalud /></ProtectedRoute>} />
-      <Route path="/planilla/examen-medico" element={<ProtectedRoute><P4_ExamenMedico /></ProtectedRoute>} />
-      <Route path="/planilla/revision" element={<ProtectedRoute><P5_Revision /></ProtectedRoute>} />
+      <Route path="/planilla/datos-personales" element={<OnboardingRoute><P1_DatosPersonales /></OnboardingRoute>} />
+      <Route path="/planilla/eps"              element={<OnboardingRoute><P2_BeneficioEPS /></OnboardingRoute>} />
+      <Route path="/planilla/oncosalud"        element={<OnboardingRoute><P3_Oncosalud /></OnboardingRoute>} />
+      <Route path="/planilla/examen-medico"    element={<OnboardingRoute><P4_ExamenMedico /></OnboardingRoute>} />
+      <Route path="/planilla/revision"         element={<OnboardingRoute><P5_Revision /></OnboardingRoute>} />
 
       {/* Trainee flow */}
-      <Route path="/trainee/datos-personales" element={<ProtectedRoute><T1_DatosPersonales /></ProtectedRoute>} />
-      <Route path="/trainee/fola" element={<ProtectedRoute><T2_BeneficioFOLA /></ProtectedRoute>} />
-      <Route path="/trainee/oncosalud" element={<ProtectedRoute><T3_Oncosalud /></ProtectedRoute>} />
-      <Route path="/trainee/revision" element={<ProtectedRoute><T4_Revision /></ProtectedRoute>} />
+      <Route path="/trainee/datos-personales" element={<OnboardingRoute><T1_DatosPersonales /></OnboardingRoute>} />
+      <Route path="/trainee/fola"             element={<OnboardingRoute><T2_BeneficioFOLA /></OnboardingRoute>} />
+      <Route path="/trainee/oncosalud"        element={<OnboardingRoute><T3_Oncosalud /></OnboardingRoute>} />
+      <Route path="/trainee/revision"         element={<OnboardingRoute><T4_Revision /></OnboardingRoute>} />
 
       {/* Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

@@ -4,7 +4,7 @@ import { TopNavBar } from '../../components/layout/TopNavBar';
 import { BottomNavBar } from '../../components/layout/BottomNavBar';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { saveOnboardingStep } from '../../firebase/services';
+import { saveOnboardingStep } from '../../lib/services';
 
 export default function P3_Oncosalud() {
   const navigate = useNavigate();
@@ -17,8 +17,10 @@ export default function P3_Oncosalud() {
     if (!user) return;
     setLoading(true);
     try {
-      await saveOnboardingStep(user.uid, { oncosalud: onco });
+      await saveOnboardingStep(user.id, { oncosalud: onco });
       navigate('/planilla/examen-medico');
+    } catch (e) {
+      console.error('Error guardando oncosalud:', e);
     } finally {
       setLoading(false);
     }

@@ -16,8 +16,8 @@ export function PhotoUpload({ preview, onFileChange, error }: PhotoUploadProps) 
       alert('Solo se aceptan archivos JPG/JPEG.');
       return;
     }
-    if (file.size > 50 * 1024) {
-      alert('El archivo es demasiado grande. Máximo 30 KB.');
+    if (file.size > 100 * 1024) {
+      alert('El archivo es demasiado grande. Máximo 100 KB.');
       return;
     }
     onFileChange(file);

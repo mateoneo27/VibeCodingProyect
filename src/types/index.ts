@@ -4,6 +4,8 @@ export interface DatosPersonales {
   foto?: File | null;
   fotoUrl: string;
   nombres: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
   dni: string;
   telefono: string;
   fechaNacimiento: string;
@@ -45,6 +47,12 @@ export interface OnboardingData {
   fola: BeneficioFOLA;
 }
 
+export interface AdminData {
+  perfilNumero: string;
+  tipo: 'EMPO' | 'EMOA' | 'EMOR' | '';
+  protocolo: string;
+}
+
 export interface FirestoreSubmission {
   uid: string;
   email: string;
@@ -54,6 +62,7 @@ export interface FirestoreSubmission {
   oncosalud?: BeneficioOncosalud;
   examenMedico?: ExamenMedico;
   fola?: BeneficioFOLA;
+  adminData?: AdminData;
   completado: boolean;
   createdAt: Date;
   completadoAt?: Date;

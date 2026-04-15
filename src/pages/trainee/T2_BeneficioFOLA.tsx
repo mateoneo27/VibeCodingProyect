@@ -4,7 +4,7 @@ import { TopNavBar } from '../../components/layout/TopNavBar';
 import { BottomNavBar } from '../../components/layout/BottomNavBar';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { saveOnboardingStep } from '../../firebase/services';
+import { saveOnboardingStep } from '../../lib/services';
 
 export default function T2_BeneficioFOLA() {
   const navigate = useNavigate();
@@ -21,8 +21,10 @@ export default function T2_BeneficioFOLA() {
     if (!isValid() || !user) return;
     setLoading(true);
     try {
-      await saveOnboardingStep(user.uid, { fola });
+      await saveOnboardingStep(user.id, { fola });
       navigate('/trainee/oncosalud');
+    } catch (e) {
+      console.error('Error guardando FOLA:', e);
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import { TopNavBar } from '../../components/layout/TopNavBar';
 import { BottomNavBar } from '../../components/layout/BottomNavBar';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { saveOnboardingStep } from '../../firebase/services';
+import { saveOnboardingStep } from '../../lib/services';
 
 export default function P4_ExamenMedico() {
   const navigate = useNavigate();
@@ -17,8 +17,10 @@ export default function P4_ExamenMedico() {
     if (!user) return;
     setLoading(true);
     try {
-      await saveOnboardingStep(user.uid, { examenMedico: examen });
+      await saveOnboardingStep(user.id, { examenMedico: examen });
       navigate('/planilla/revision');
+    } catch (e) {
+      console.error('Error guardando examen médico:', e);
     } finally {
       setLoading(false);
     }

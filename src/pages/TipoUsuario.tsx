@@ -1,30 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { BottomNavBar } from '../components/layout/BottomNavBar';
 import { useOnboarding } from '../context/OnboardingContext';
 import { useAuth } from '../hooks/useAuth';
-import { saveTipoUsuario } from '../firebase/services';
+import { saveTipoUsuario, getOnboardingData } from '../lib/services';
 import type { TipoUsuario as TTipoUsuario } from '../types';
 
 export default function TipoUsuario() {
   const navigate = useNavigate();
-  const { setTipoUsuario } = useOnboarding();
+  const { setTipoUsuario, loadAll } = useOnboarding();
   const { user } = useAuth();
   const [selected, setSelected] = useState<TTipoUsuario | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Load existing data for this user on mount
+  useEffect(() => {
+    if (!user) return;
+    getOnboardingData(user.id).then((data) => {
+      if (!data) return;
+      loadAll(data);
+      if (data.tipoUsuario) {
+        setSelected(data.tipoUsuario as TTipoUsuario);
+      }
+    });
+  }, [user]);
 
   async function handleNext() {
     if (!selected || !user) return;
     setLoading(true);
     try {
-      await saveTipoUsuario(user.uid, user.email!, selected);
+      await saveTipoUsuario(user.id, user.email!, selected);
       setTipoUsuario(selected);
       if (selected === 'planilla') {
         navigate('/planilla/datos-personales');
       } else {
         navigate('/trainee/datos-personales');
       }
+    } catch (e) {
+      console.error('Error guardando tipo de usuario:', e);
     } finally {
       setLoading(false);
     }

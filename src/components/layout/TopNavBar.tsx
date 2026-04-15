@@ -1,8 +1,8 @@
 export function TopNavBar() {
   return (
-    <header className="sticky top-0 w-full z-50 bg-[#f9f9ff]/70 backdrop-blur-xl shadow-[0_12px_32px_rgba(25,28,33,0.06)]">
-      <div className="flex justify-between items-center px-8 py-4 w-full max-w-full mx-auto">
-        <div className="text-2xl font-black tracking-tighter text-[#00478d] font-headline">Neo</div>
+    <header className="sticky top-0 w-full z-50 bg-[#F6F5FA]/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,51,0.06)]">
+      <div className="flex items-center px-8 py-3 w-full max-w-full mx-auto">
+        <img src="/logo_neo.png" alt="NEO" className="h-16 w-auto" />
       </div>
     </header>
   );

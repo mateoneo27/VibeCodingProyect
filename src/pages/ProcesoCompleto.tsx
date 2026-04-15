@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { TopNavBar } from '../components/layout/TopNavBar';
 
 const FAQ_ITEMS = [
@@ -25,48 +26,50 @@ const FAQ_ITEMS = [
   },
 ];
 
+function renderAnswer(answer: string) {
+  const parts = answer.split('people@neo.com.pe');
+  if (parts.length === 1) return <p className="text-[#4D4D70] leading-relaxed whitespace-pre-line">{answer}</p>;
+  return (
+    <p className="text-[#4D4D70] leading-relaxed whitespace-pre-line">
+      {parts.map((part, i) =>
+        i < parts.length - 1 ? (
+          <span key={i}>
+            {part}
+            <a href="mailto:people@neo.com.pe" className="font-bold text-[#0A29CD] hover:underline">
+              people@neo.com.pe
+            </a>
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </p>
+  );
+}
+
 function FaqItem({ icon, question, answer }: { icon: string; question: string; answer: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={`bg-white rounded-2xl transition-all duration-300 hover:shadow-md border ${open ? 'border-[#00478d]/20' : 'border-transparent'}`}>
+    <div className={`rounded-2xl transition-all duration-300 border ${open ? 'bg-white border-[#0A29CD]/20 shadow-md' : 'bg-white border-[#B3B3C2]/20 hover:shadow-sm'}`}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full text-left p-6 md:p-8 flex items-center gap-6 focus:outline-none"
+        className="w-full text-left p-5 flex items-center gap-4 focus:outline-none"
       >
-        <div className="w-12 h-12 rounded-xl bg-[#d6e3ff] flex items-center justify-center flex-shrink-0">
-          <span className="material-symbols-outlined text-[#00478d]">{icon}</span>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${open ? 'bg-[#0A29CD] text-white' : 'bg-[#0A29CD]/10 text-[#0A29CD]'}`}>
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
         </div>
-        <div className="flex-grow">
-          <h3 className="font-headline text-lg md:text-xl font-bold text-[#191c21]">{question}</h3>
-        </div>
+        <span className="flex-grow font-headline text-base font-bold text-[#000033]">{question}</span>
         <span
-          className="material-symbols-outlined text-[#9ba3ae] transition-transform duration-300"
+          className="material-symbols-outlined text-[#9999AD] transition-transform duration-300 flex-shrink-0"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           expand_more
         </span>
       </button>
       {open && (
-        <div className="px-6 md:px-8 pb-8 ml-[4.5rem]">
-          <p className="text-[#424752] leading-relaxed whitespace-pre-line">
-            {answer.includes('people@neo.com.pe') ? (
-              <>
-                {answer.split('people@neo.com.pe').map((part, i, arr) =>
-                  i < arr.length - 1 ? (
-                    <span key={i}>
-                      {part}
-                      <span className="font-bold text-[#00478d]">people@neo.com.pe</span>
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-              </>
-            ) : (
-              answer
-            )}
-          </p>
+        <div className="px-5 pb-5 ml-14">
+          {renderAnswer(answer)}
         </div>
       )}
     </div>
@@ -74,85 +77,87 @@ function FaqItem({ icon, question, answer }: { icon: string; question: string; a
 }
 
 export default function ProcesoCompleto() {
+  const [searchParams] = useSearchParams();
+  const yaCompletado = searchParams.get('ya') === '1';
+
   return (
-    <div className="bg-[#f9f9ff] text-[#191c21] min-h-screen flex flex-col font-body">
+    <div className="bg-[#F6F5FA] text-[#000033] min-h-screen flex flex-col font-body">
       <TopNavBar />
 
-      <main className="flex-grow pt-12 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
-        {/* Success Hero */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
-          <div className="lg:col-span-7">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#65f9e7] text-[#00201d] mb-6">
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-              <span className="text-xs font-bold uppercase tracking-widest font-label">Registro Completado</span>
-            </div>
-            <h1 className="font-headline text-5xl md:text-6xl font-extrabold text-[#00478d] mb-8 leading-tight tracking-tight">
-              ¡Gracias por completar tu información!
-            </h1>
-            <p className="text-[#424752] text-lg md:text-xl leading-relaxed max-w-2xl">
-              Tu registro ha sido enviado exitosamente. Si tienes alguna duda, puedes consultar nuestra sección de
-              preguntas frecuentes a continuación.
-            </p>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <button className="bg-gradient-to-b from-[#00478d] to-[#005eb8] text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-[#00478d]/20 hover:opacity-90 active:scale-95 transition-all font-headline">
-                Ir al Tablero Principal
-              </button>
-            </div>
-          </div>
+      {yaCompletado && (
+        <div className="w-full bg-[#0A29CD] text-white px-6 py-3 flex items-center justify-center gap-3">
+          <span className="material-symbols-outlined text-[#56E976] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+            check_circle
+          </span>
+          <p className="text-sm font-semibold">
+            Ya completaste tu proceso de onboarding. Esta es tu página de referencia.
+          </p>
+        </div>
+      )}
 
-          <div className="lg:col-span-5 flex flex-col justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <main className="flex-grow pt-12 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
+
+        {/* Hero: left = texto + stats | right = FAQ */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+          {/* Left */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#56E976] text-[#000033] mb-6">
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  check_circle
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest">Registro Completado</span>
+              </div>
+
+              <h1 className="font-headline text-4xl md:text-5xl font-extrabold text-[#000033] leading-tight tracking-tight mb-4">
+                ¡Gracias por completar<br />
+                <span className="text-[#0A29CD]">tu información!</span>
+              </h1>
+              <p className="text-[#4D4D70] text-lg leading-relaxed">
+                Tu registro fue enviado exitosamente al equipo de Talento y Cultura.
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-col gap-3">
               {[
-                { icon: 'verified_user', title: 'Integridad', desc: 'Actuamos con honestidad y transparencia' },
-                { icon: 'school', title: 'Aprendizaje constante', desc: 'Evolucionamos cada día a través del conocimiento' },
-                { icon: 'trending_up', title: 'Orientación a resultados', desc: 'Enfocados en alcanzar la excelencia' },
-                { icon: 'science', title: 'Experimentación', desc: 'Probamos nuevas ideas para innovar' },
-              ].map((card) => (
-                <div key={card.title} className="bg-white p-8 rounded-[2rem] shadow-sm border border-[#f0f1f8] flex flex-col items-center text-center group hover:border-[#00478d]/20 transition-colors">
-                  <div className="w-16 h-16 rounded-2xl bg-[#d6e3ff] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-[#00478d] text-3xl">{card.icon}</span>
-                  </div>
-                  <h3 className="font-headline font-bold text-[#191c21]">{card.title}</h3>
-                  <p className="text-xs text-[#424752] mt-2">{card.desc}</p>
+                { icon: 'task_alt', label: 'Proceso completado', color: 'text-[#56E976]' },
+                { icon: 'mail', label: 'Recibirás un correo de confirmación', color: 'text-[#49C7FD]' },
+                { icon: 'support_agent', label: 'Soporte: people@neo.com.pe', color: 'text-[#FFEE53]' },
+              ].map((s) => (
+                <div key={s.label} className="bg-[#000033] rounded-2xl px-6 py-4 flex items-center gap-4">
+                  <span className={`material-symbols-outlined ${s.color} text-2xl`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {s.icon}
+                  </span>
+                  <p className="text-white text-sm font-medium">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
-        </section>
 
-        {/* FAQ */}
-        <section className="bg-[#f2f3fb] rounded-[2.5rem] p-8 md:p-16 mt-8">
-          <div className="mb-12">
-            <h2 className="font-headline text-3xl font-bold text-[#00478d] mb-2">Preguntas Frecuentes</h2>
-            <div className="h-1.5 w-24 bg-[#005149] rounded-full" />
+          {/* Right — FAQ */}
+          <div className="lg:col-span-7">
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#0A29CD]">Soporte</span>
+              <h2 className="font-headline text-2xl font-bold text-[#000033] mt-1 mb-3">Preguntas Frecuentes</h2>
+              <div className="h-1.5 w-14 bg-gradient-to-r from-[#49C7FD] to-[#0A29CD] rounded-full" />
+            </div>
+            <div className="space-y-3">
+              {FAQ_ITEMS.map((item) => (
+                <FaqItem key={item.question} {...item} />
+              ))}
+            </div>
           </div>
-          <div className="space-y-4">
-            {FAQ_ITEMS.map((item) => (
-              <FaqItem key={item.question} {...item} />
-            ))}
-          </div>
-        </section>
 
-        {/* Progress indicator */}
-        <div className="mt-24 max-w-md mx-auto text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9ba3ae] mb-4">Progreso del Onboarding</p>
-          <div className="h-3 w-full bg-[#e1e2ea] rounded-full overflow-hidden">
-            <div className="h-full w-full bg-gradient-to-r from-[#40dccb] to-[#005149] rounded-full animate-pulse" />
-          </div>
-          <p className="mt-3 text-[#005149] font-bold text-sm">¡100% Completado!</p>
-        </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full py-12 mt-auto bg-[#f0f1f8] border-t border-[#e1e2ea]/10 flex flex-col md:flex-row justify-between items-center px-12">
-        <p className="text-xs uppercase tracking-widest text-[#9ba3ae] mb-4 md:mb-0">
-          © 2024 Neo HR Systems. All rights reserved.
+      <footer className="w-full py-8 bg-[#000033] flex flex-col md:flex-row justify-between items-center px-12 gap-4">
+        <img src="/logo_neo.png" alt="NEO" className="h-8 w-auto brightness-0 invert opacity-80" />
+        <p className="text-xs uppercase tracking-widest text-[#9999AD]">
+          © {new Date().getFullYear()} Neo Seguros. Todos los derechos reservados.
         </p>
-        <div className="flex gap-8">
-          <a href="#" className="text-xs uppercase tracking-widest text-[#9ba3ae] hover:underline hover:text-[#00478d]">Privacy Policy</a>
-          <a href="#" className="text-xs uppercase tracking-widest text-[#9ba3ae] hover:underline hover:text-[#00478d]">Terms of Service</a>
-          <a href="#" className="text-xs uppercase tracking-widest text-[#9ba3ae] hover:underline hover:text-[#00478d]">Contact Support</a>
-        </div>
       </footer>
     </div>
   );

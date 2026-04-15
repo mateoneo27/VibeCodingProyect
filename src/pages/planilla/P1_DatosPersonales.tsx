@@ -6,7 +6,8 @@ import { ProgressBar } from '../../components/ui/ProgressBar';
 import { PhotoUpload } from '../../components/ui/PhotoUpload';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { uploadPhoto, saveOnboardingStep } from '../../firebase/services';
+import { saveOnboardingStep, uploadPhoto } from '../../lib/services';
+
 
 export default function P1_DatosPersonales() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function P1_DatosPersonales() {
   }
 
   function isValid() {
-    return dp.nombres && dp.dni && dp.telefono && dp.fechaNacimiento && dp.edad !== '' && dp.correo && dp.direccion;
+    return dp.nombres && dp.apellidoPaterno && dp.apellidoMaterno && dp.dni && dp.telefono && dp.fechaNacimiento && dp.edad !== '' && dp.correo && dp.direccion;
   }
 
   async function handleNext() {
@@ -30,13 +31,19 @@ export default function P1_DatosPersonales() {
     try {
       let fotoUrl = dp.fotoUrl;
       if (dp.foto) {
-        fotoUrl = await uploadPhoto(user.uid, dp.foto);
-        setDatosPersonales({ fotoUrl });
+        try {
+          fotoUrl = await uploadPhoto(user.id, dp.foto);
+          setDatosPersonales({ fotoUrl });
+        } catch {
+          console.warn('No se pudo subir la foto, se usará URL local.');
+        }
       }
-      await saveOnboardingStep(user.uid, {
+      await saveOnboardingStep(user.id, {
         datosPersonales: {
           fotoUrl,
           nombres: dp.nombres,
+          apellidoPaterno: dp.apellidoPaterno,
+          apellidoMaterno: dp.apellidoMaterno,
           dni: dp.dni,
           telefono: dp.telefono,
           fechaNacimiento: dp.fechaNacimiento,
@@ -46,6 +53,8 @@ export default function P1_DatosPersonales() {
         },
       });
       navigate('/planilla/eps');
+    } catch (e) {
+      console.error('Error guardando datos personales:', e);
     } finally {
       setLoading(false);
     }
@@ -106,13 +115,37 @@ export default function P1_DatosPersonales() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                   <PhotoUpload preview={dp.fotoUrl} onFileChange={handleFile} />
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Nombres y Apellidos</label>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Nombres</label>
                     <input
                       type="text"
                       value={dp.nombres}
                       onChange={(e) => setDatosPersonales({ nombres: e.target.value })}
-                      placeholder="Ej: Juan Pérez García"
+                      placeholder="Ej: Juan Carlos"
+                      className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none placeholder:text-[#727783]/50"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Apellido Paterno</label>
+                    <input
+                      type="text"
+                      value={dp.apellidoPaterno}
+                      onChange={(e) => setDatosPersonales({ apellidoPaterno: e.target.value })}
+                      placeholder="Ej: Perez"
+                      className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none placeholder:text-[#727783]/50"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Apellido Materno</label>
+                    <input
+                      type="text"
+                      value={dp.apellidoMaterno}
+                      onChange={(e) => setDatosPersonales({ apellidoMaterno: e.target.value })}
+                      placeholder="Ej: Garcia"
                       className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none placeholder:text-[#727783]/50"
                       required
                     />

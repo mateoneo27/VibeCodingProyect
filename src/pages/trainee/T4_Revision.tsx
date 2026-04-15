@@ -4,7 +4,7 @@ import { TopNavBar } from '../../components/layout/TopNavBar';
 import { BottomNavBar } from '../../components/layout/BottomNavBar';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { completeOnboarding } from '../../firebase/services';
+import { completeOnboarding } from '../../lib/services';
 
 export default function T4_Revision() {
   const navigate = useNavigate();
@@ -18,8 +18,10 @@ export default function T4_Revision() {
     if (!user) return;
     setLoading(true);
     try {
-      await completeOnboarding(user.uid);
+      await completeOnboarding(user.id);
       navigate('/completado');
+    } catch (e) {
+      console.error('Error completando onboarding:', e);
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,9 @@ export default function T4_Revision() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
-                    ['Nombre Completo', dp.nombres || '—'],
+                    ['Nombres', dp.nombres || '—'],
+                    ['Apellido Paterno', dp.apellidoPaterno || '—'],
+                    ['Apellido Materno', dp.apellidoMaterno || '—'],
                     ['DNI', dp.dni || '—'],
                     ['Teléfono', dp.telefono || '—'],
                     ['Fecha de Nacimiento', dp.fechaNacimiento || '—'],

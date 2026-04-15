@@ -13,6 +13,8 @@ const defaultDatosPersonales: DatosPersonales = {
   foto: null,
   fotoUrl: '',
   nombres: '',
+  apellidoPaterno: '',
+  apellidoMaterno: '',
   dni: '',
   telefono: '',
   fechaNacimiento: '',
@@ -53,6 +55,7 @@ type Action =
   | { type: 'SET_ONCOSALUD'; payload: Partial<BeneficioOncosalud> }
   | { type: 'SET_EXAMEN_MEDICO'; payload: Partial<ExamenMedico> }
   | { type: 'SET_FOLA'; payload: Partial<BeneficioFOLA> }
+  | { type: 'LOAD_ALL'; payload: Partial<OnboardingData> }
   | { type: 'RESET' };
 
 function reducer(state: OnboardingData, action: Action): OnboardingData {
@@ -69,6 +72,16 @@ function reducer(state: OnboardingData, action: Action): OnboardingData {
       return { ...state, examenMedico: { ...state.examenMedico, ...action.payload } };
     case 'SET_FOLA':
       return { ...state, fola: { ...state.fola, ...action.payload } };
+    case 'LOAD_ALL':
+      return {
+        ...state,
+        ...(action.payload.tipoUsuario !== undefined && { tipoUsuario: action.payload.tipoUsuario }),
+        ...(action.payload.datosPersonales && { datosPersonales: { ...defaultDatosPersonales, ...action.payload.datosPersonales, foto: null } }),
+        ...(action.payload.beneficioEPS && { beneficioEPS: action.payload.beneficioEPS }),
+        ...(action.payload.oncosalud && { oncosalud: { ...defaultOncosalud, ...action.payload.oncosalud } }),
+        ...(action.payload.examenMedico && { examenMedico: action.payload.examenMedico }),
+        ...(action.payload.fola && { fola: { ...defaultFOLA, ...action.payload.fola } }),
+      };
     case 'RESET':
       return initialState;
     default:
@@ -84,6 +97,7 @@ interface OnboardingContextType {
   setOncosalud: (d: Partial<BeneficioOncosalud>) => void;
   setExamenMedico: (d: Partial<ExamenMedico>) => void;
   setFola: (d: Partial<BeneficioFOLA>) => void;
+  loadAll: (d: Partial<OnboardingData>) => void;
   reset: () => void;
 }
 
@@ -98,10 +112,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const setOncosalud = useCallback((d: Partial<BeneficioOncosalud>) => dispatch({ type: 'SET_ONCOSALUD', payload: d }), []);
   const setExamenMedico = useCallback((d: Partial<ExamenMedico>) => dispatch({ type: 'SET_EXAMEN_MEDICO', payload: d }), []);
   const setFola = useCallback((d: Partial<BeneficioFOLA>) => dispatch({ type: 'SET_FOLA', payload: d }), []);
+  const loadAll = useCallback((d: Partial<OnboardingData>) => dispatch({ type: 'LOAD_ALL', payload: d }), []);
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
 
   return (
-    <OnboardingContext.Provider value={{ state, setTipoUsuario, setDatosPersonales, setBeneficioEPS, setOncosalud, setExamenMedico, setFola, reset }}>
+    <OnboardingContext.Provider value={{ state, setTipoUsuario, setDatosPersonales, setBeneficioEPS, setOncosalud, setExamenMedico, setFola, loadAll, reset }}>
       {children}
     </OnboardingContext.Provider>
   );

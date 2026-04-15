@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase/config';
-import { setUserRole } from '../../firebase/services';
+import { signUp, setUserRole } from '../../lib/services';
+import { supabase } from '../../lib/supabase';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,22 +14,17 @@ export default function Register() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (password !== confirm) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
+    if (password !== confirm) { setError('Las contraseñas no coinciden.'); return; }
+    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
     setLoading(true);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await setUserRole(cred.user.uid, email, 'user');
+      await signUp(email, password);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await setUserRole(user.id, email, 'user');
       navigate('/tipo-usuario');
     } catch (err: unknown) {
-      const firebaseError = err as { code?: string };
-      if (firebaseError.code === 'auth/email-already-in-use') {
+      const msg = (err as Error).message ?? '';
+      if (msg.includes('already registered')) {
         setError('Este correo ya tiene una cuenta. Por favor inicia sesión.');
       } else {
         setError('No se pudo crear la cuenta. Inténtalo de nuevo.');
@@ -63,65 +57,32 @@ export default function Register() {
           <div className="bg-white rounded-[2rem] p-8 shadow-[0_12px_32px_rgba(25,28,33,0.06)]">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">
-                  Correo electrónico
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="usuario@neo.com.pe"
-                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none"
-                />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Correo electrónico</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="usuario@neo.com.pe"
+                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none" />
               </div>
-
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none"
-                />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Contraseña</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Mínimo 6 caracteres"
+                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none" />
               </div>
-
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">
-                  Confirmar contraseña
-                </label>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  required
-                  placeholder="Repite tu contraseña"
-                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none"
-                />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#525f74] px-1">Confirmar contraseña</label>
+                <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required placeholder="Repite tu contraseña"
+                  className="w-full bg-[#e7e8f0] border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-[#00478d] focus:bg-white transition-all outline-none" />
               </div>
 
-              {error && (
-                <p className="text-sm text-[#ba1a1a] bg-[#ffdad6] px-4 py-3 rounded-xl">{error}</p>
-              )}
+              {error && <p className="text-sm text-[#ba1a1a] bg-[#ffdad6] px-4 py-3 rounded-xl">{error}</p>}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-b from-[#00478d] to-[#005eb8] text-white font-headline font-bold rounded-2xl py-4 shadow-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
-              >
+              <button type="submit" disabled={loading}
+                className="w-full bg-gradient-to-b from-[#00478d] to-[#005eb8] text-white font-headline font-bold rounded-2xl py-4 shadow-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-60">
                 {loading ? 'Creando cuenta...' : 'Crear cuenta'}
               </button>
             </form>
 
             <p className="text-center text-sm text-[#424752] mt-6">
               ¿Ya tienes cuenta?{' '}
-              <Link to="/auth/login" className="text-[#00478d] font-bold hover:underline">
-                Inicia sesión
-              </Link>
+              <Link to="/auth/login" className="text-[#00478d] font-bold hover:underline">Inicia sesión</Link>
             </p>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { BottomNavBar } from '../../components/layout/BottomNavBar';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useAuth } from '../../hooks/useAuth';
-import { saveOnboardingStep } from '../../firebase/services';
+import { saveOnboardingStep } from '../../lib/services';
 
 export default function P2_BeneficioEPS() {
   const navigate = useNavigate();
@@ -18,8 +18,10 @@ export default function P2_BeneficioEPS() {
     if (!user) return;
     setLoading(true);
     try {
-      await saveOnboardingStep(user.uid, { beneficioEPS: eps });
+      await saveOnboardingStep(user.id, { beneficioEPS: eps });
       navigate('/planilla/oncosalud');
+    } catch (e) {
+      console.error('Error guardando EPS:', e);
     } finally {
       setLoading(false);
     }
