@@ -50,6 +50,7 @@ export default function P1_DatosPersonales() {
           edad: dp.edad,
           correo: dp.correo,
           direccion: dp.direccion,
+          sexo: dp.sexo,
         },
       });
       navigate('/planilla/eps');
