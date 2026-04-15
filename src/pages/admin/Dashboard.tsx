@@ -175,6 +175,7 @@ function UserModal({
     edad:            s.datosPersonales?.edad            ?? '',
     correo:          s.datosPersonales?.correo          ?? '',
     direccion:       s.datosPersonales?.direccion       ?? '',
+    sexo:            s.datosPersonales?.sexo            ?? '',
   });
   const [eps, setEps]   = useState<BeneficioEPS>(s.beneficioEPS ?? { desea: false });
   const [onco, setOnco] = useState<BeneficioOncosalud>(s.oncosalud ?? { desea: false, nombres: '', dni: '', celular: '', correo: '' });
@@ -328,6 +329,13 @@ function UserModal({
                   </Field>
                   <Field label="Dirección">
                     <textarea className={inputCls + ' resize-none'} rows={2} value={dp.direccion} onChange={(e) => { setDp(p => ({ ...p, direccion: e.target.value })); setSaved(false); }} placeholder="Av. Las Camelias 455, Lima" />
+                  </Field>
+                  <Field label="Sexo">
+                    <select className={inputCls} value={dp.sexo} onChange={(e) => { setDp(p => ({ ...p, sexo: e.target.value })); setSaved(false); }}>
+                      <option value="">Seleccionar...</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Femenino">Femenino</option>
+                    </select>
                   </Field>
                 </div>
               </div>
