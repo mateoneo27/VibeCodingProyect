@@ -3,6 +3,7 @@
   onNext?: () => void;
   nextLabel?: string;
   backLabel?: string;
+  backDisabled?: boolean;
   nextDisabled?: boolean;
   showProgress?: boolean;
   progressPercent?: number;
@@ -12,8 +13,9 @@
 export function BottomNavBar({
   onBack,
   onNext,
-  nextLabel = 'Next Step',
-  backLabel = 'Go Back',
+  nextLabel = 'Siguiente',
+  backLabel = 'Retroceder',
+  backDisabled = false,
   nextDisabled = false,
   showProgress = false,
   progressPercent = 0,
@@ -23,7 +25,8 @@ export function BottomNavBar({
     <nav className="fixed bottom-0 left-0 w-full z-50 bg-[#F6F5FA]/90 backdrop-blur-lg flex justify-between items-center px-10 py-6 rounded-t-[1.5rem] shadow-[0_-8px_24px_rgba(0,0,51,0.06)]">
       <button
         onClick={onBack}
-        className="text-[#000033] bg-[#f6f5fa] rounded-[1.5rem] px-8 py-3 font-headline font-semibold uppercase tracking-widest text-xs hover:opacity-90 hover:scale-105 transition-transform active:scale-95 flex items-center gap-2"
+        disabled={backDisabled}
+        className="text-[#000033] bg-[#f6f5fa] rounded-[1.5rem] px-8 py-3 font-headline font-semibold uppercase tracking-widest text-xs hover:opacity-90 hover:scale-105 transition-transform active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
         <span className="material-symbols-outlined text-sm">arrow_back</span>
         {backLabel}

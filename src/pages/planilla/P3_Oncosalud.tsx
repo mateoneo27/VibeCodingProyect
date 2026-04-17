@@ -92,7 +92,7 @@ export default function P3_Oncosalud() {
       <BottomNavBar
         onBack={() => navigate('/planilla/eps')}
         onNext={handleNext}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
         nextDisabled={loading}
       />
     </div>

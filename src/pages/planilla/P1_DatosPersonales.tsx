@@ -22,7 +22,7 @@ export default function P1_DatosPersonales() {
   }
 
   function isValid() {
-    return dp.nombres && dp.apellidoPaterno && dp.apellidoMaterno && dp.dni && dp.telefono && dp.fechaNacimiento && dp.edad !== '' && dp.correo && dp.direccion;
+    return dp.fotoUrl && dp.nombres && dp.apellidoPaterno && dp.apellidoMaterno && dp.dni && dp.telefono && dp.fechaNacimiento && dp.edad !== '' && dp.correo && dp.direccion;
   }
 
   async function handleNext() {
@@ -250,7 +250,7 @@ export default function P1_DatosPersonales() {
         onBack={() => navigate('/tipo-usuario')}
         onNext={handleNext}
         nextDisabled={!isValid() || loading}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
       />
     </div>
   );

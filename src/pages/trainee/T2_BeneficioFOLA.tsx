@@ -107,7 +107,7 @@ export default function T2_BeneficioFOLA() {
         onBack={() => navigate('/trainee/datos-personales')}
         onNext={handleNext}
         nextDisabled={!isValid() || loading}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
       />
       <div className="h-24" />
     </div>

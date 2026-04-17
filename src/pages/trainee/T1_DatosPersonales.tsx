@@ -257,7 +257,7 @@ export default function T1_DatosPersonales() {
         onBack={() => navigate('/tipo-usuario')}
         onNext={handleNext}
         nextDisabled={!isValid() || loading}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
       />
     </div>
   );

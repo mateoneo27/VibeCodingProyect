@@ -129,8 +129,9 @@ export default function TipoUsuario() {
       <BottomNavBar
         onBack={() => navigate(-1)}
         onNext={handleNext}
+        backDisabled
         nextDisabled={!selected || loading}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
         showProgress
         progressPercent={15}
       />

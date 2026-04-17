@@ -127,7 +127,7 @@ export default function P2_BeneficioEPS() {
       <BottomNavBar
         onBack={() => navigate('/planilla/datos-personales')}
         onNext={handleNext}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
         nextDisabled={loading}
       />
     </div>

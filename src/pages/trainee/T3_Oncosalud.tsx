@@ -88,7 +88,7 @@ export default function T3_Oncosalud() {
       <BottomNavBar
         onBack={() => navigate('/trainee/fola')}
         onNext={handleNext}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
         nextDisabled={loading}
       />
     </div>

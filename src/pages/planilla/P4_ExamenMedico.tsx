@@ -13,8 +13,12 @@ export default function P4_ExamenMedico() {
   const [loading, setLoading] = useState(false);
   const examen = state.examenMedico;
 
+  function isValid() {
+    return Boolean(examen.fechaSugerida?.trim());
+  }
+
   async function handleNext() {
-    if (!user) return;
+    if (!user || !isValid()) return;
     setLoading(true);
     try {
       await saveOnboardingStep(user.id, { examenMedico: examen });
@@ -90,6 +94,7 @@ export default function P4_ExamenMedico() {
                   value={examen.fechaSugerida}
                   onChange={(e) => setExamenMedico({ ...examen, fechaSugerida: e.target.value })}
                   className="w-full bg-[#ccccd6] border-none rounded-xl px-6 py-5 text-lg font-medium focus:ring-2 focus:ring-[#0a29cd] focus:bg-white transition-all outline-none placeholder:text-[#9999ad] appearance-none custom-datetime-input"
+                  required
                 />
                 {/* Icono posicionado para que no bloquee el click del input nativo */}
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -149,8 +154,8 @@ export default function P4_ExamenMedico() {
       <BottomNavBar
         onBack={() => navigate('/planilla/oncosalud')}
         onNext={handleNext}
-        nextLabel={loading ? 'Guardando...' : 'Next Step'}
-        nextDisabled={loading}
+        nextLabel={loading ? 'Guardando...' : 'Siguiente'}
+        nextDisabled={!isValid() || loading}
       />
     </div>
   );
