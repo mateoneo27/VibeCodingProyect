@@ -13,8 +13,8 @@ const DEFAULT_ADMIN: AdminData = { perfilNumero: '', tipo: '', protocolo: '' };
 
 // ── EPS email config — replace with real addresses ────────────────────────────
 const EPS_TO  = 'mateo.solorzano@neo.com.pe';          // TODO: replace with real TO address
-const EPS_CC  = 'matsv2703@gmail.com,mateo.solorzano.v@uni.pe';  // TODO: replace with real CC addresses
-const ONCO_TO = 'mateo.solorzano@neo.com.pe';
+const EPS_CC  = 'X@gmail.com, Y@gmail.com';  // TODO: replace with real CC addresses
+const ONCO_TO = 'Z@gmail.com';
 
 function buildEpsGmailUrl(s: FirestoreSubmission): string {
   const nombre = buildNombreCompleto(s.datosPersonales, '(sin nombre)');
@@ -61,7 +61,7 @@ function buildOncoGmailUrl(s: FirestoreSubmission): string {
 }
 
 // ── FOLA email + Excel ────────────────────────────────────────────────────────
-const FOLA_TO = 'matsv2703@gmail.com'; // TODO: replace with real FOLA recipient address
+const FOLA_TO = 'W@gmail.com'; // TODO: replace with real FOLA recipient address
 
 function buildFolaGmailUrl(): string {
   const body =
