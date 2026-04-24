@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { signOut, getAllSubmissions, uploadPhoto } from '../../lib/services';
 import { supabase } from '../../lib/supabase';
 import { buildNombreCompleto } from '../../utils/names';
@@ -59,6 +60,125 @@ function buildOncoGmailUrl(s: FirestoreSubmission): string {
   return `https://mail.google.com/mail/?view=cm&${params.toString()}`;
 }
 
+// ── FOLA email + Excel ────────────────────────────────────────────────────────
+const FOLA_TO = 'matsv2703@gmail.com'; // TODO: replace with real FOLA recipient address
+
+function buildFolaGmailUrl(): string {
+  const body =
+    `Estimada Juana,\n\n` +
+    `Espero que te encuentres bien.\n\n` +
+    `Te adjunto la plantilla completa para la inclusión de un practicante al seguro FOLA.\n\n` +
+    `Quedo atenta a tus comentarios, muchas gracias por tu apoyo.\n\n` +
+    `Saludos cordiales,`;
+  const params = new URLSearchParams({
+    to:   FOLA_TO,
+    su:   'Inclusión Póliza FOLA | Neo Consulting',
+    body,
+  });
+  return `https://mail.google.com/mail/?view=cm&${params.toString()}`;
+}
+
+async function generateAndDownloadFola(s: FirestoreSubmission): Promise<void> {
+  const response = await fetch('/fola_template.xlsx');
+  if (!response.ok) throw new Error('No se pudo cargar la plantilla FOLA.');
+  const arrayBuffer = await response.arrayBuffer();
+
+  const wb = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
+  const sheetName = wb.SheetNames.find((n) => n.toLowerCase().includes('inclus')) ?? wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+
+  function setCell(ref: string, value: string | number) {
+    const existing = ws[ref];
+    if (existing) {
+      existing.v = value;
+      existing.t = typeof value === 'number' ? 'n' : 's';
+      delete existing.w;
+    } else {
+      ws[ref] = { t: typeof value === 'number' ? 'n' : 's', v: value };
+    }
+  }
+
+  const dp  = s.datosPersonales;
+  const fola = s.fola;
+
+  setCell('A103', dp?.apellidoPaterno ?? '');
+  setCell('B103', dp?.apellidoMaterno ?? '');
+  setCell('C103', dp?.nombres ?? '');
+  setCell('F103', fola?.dni || dp?.dni || '');
+  setCell('H103', dp?.correo || s.email || '');
+  setCell('J103', fola?.fechaNacimiento || dp?.fechaNacimiento || '');
+  setCell('K103', fola?.sexo || dp?.sexo || '');
+  setCell('L103', fola?.remuneracion !== undefined && fola.remuneracion !== '' ? Number(fola.remuneracion) : '');
+
+  const out  = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+  const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'Neo Consulting Inclusión - Solicitud de Afiliación AMI FOLA.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Examen email + Excel ──────────────────────────────────────────────────────
+const EXAMEN_TO = 'X@gmail.com'; // TODO: replace with real Examen recipient address
+
+function buildExamenGmailUrl(s: FirestoreSubmission): string {
+  const dp     = s.datosPersonales;
+  const nombre = `${dp?.apellidoPaterno ?? ''} ${dp?.apellidoMaterno ?? ''}, ${dp?.nombres ?? ''}`.trim();
+  const body =
+    `Buenas tardes estimados,\n\n` +
+    `Adjunto el formato de cita para 2 colaboradores, por favor programarlo.\n` +
+    `-${nombre}\n\n` +
+    `Me confirman la programación.\n\n` +
+    `Muchas gracias por su apoyo, quedamos atentos.\n\n` +
+    `Saludos,`;
+  const params = new URLSearchParams({
+    to:   EXAMEN_TO,
+    su:   'Cita Examen Ocupacional | Neo Consulting',
+    body,
+  });
+  return `https://mail.google.com/mail/?view=cm&${params.toString()}`;
+}
+
+async function generateAndDownloadExamen(s: FirestoreSubmission): Promise<void> {
+  const response = await fetch('/examen_template.xlsx');
+  if (!response.ok) throw new Error('No se pudo cargar la plantilla de examen.');
+  const arrayBuffer = await response.arrayBuffer();
+
+  const wb = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
+  const sheetName = wb.SheetNames.find((n) => n.toLowerCase().includes('hoja1')) ?? wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+
+  function setCell(ref: string, value: string | number) {
+    const existing = ws[ref];
+    if (existing) {
+      existing.v = value;
+      existing.t = typeof value === 'number' ? 'n' : 's';
+      delete existing.w;
+    } else {
+      ws[ref] = { t: typeof value === 'number' ? 'n' : 's', v: value };
+    }
+  }
+
+  const dp = s.datosPersonales;
+  setCell('B14', `${dp?.apellidoPaterno ?? ''} ${dp?.apellidoMaterno ?? ''}, ${dp?.nombres ?? ''}`.trim());
+  setCell('D14', dp?.edad !== undefined && dp.edad !== '' ? Number(dp.edad) : '');
+
+  const out  = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+  const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `FORMATO DE CITA DE ATENCION RESPIRA S.A.C. _ ${dp?.nombres ?? ''} ${dp?.apellidoPaterno ?? ''}.xlsx`.trim();
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // ── Welcome email ─────────────────────────────────────────────────────────────
 
 function buildWelcomeGmailUrl(email: string): string {
@@ -105,43 +225,82 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
   );
 }
 
-// ── Email actions (visual only) ───────────────────────────────────────────────
+// ── Email actions ─────────────────────────────────────────────────────────────
 
 function EmailActions({ s }: { s: FirestoreSubmission }) {
   const isTrainee = s.tipoUsuario === 'trainee';
   const base = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border';
+  const [toast, setToast] = useState('');
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 5000);
+  }
+
+  async function handleFola(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await generateAndDownloadFola(s);
+      window.open(buildFolaGmailUrl(), '_blank', 'noopener,noreferrer');
+      showToast('Archivo descargado — adjúntalo al correo que acaba de abrirse en Gmail.');
+    } catch (err) {
+      console.error('Error generando FOLA:', err);
+      alert(`No se pudo generar el archivo FOLA: ${(err as Error).message}`);
+    }
+  }
+
+  async function handleExamen(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await generateAndDownloadExamen(s);
+      window.open(buildExamenGmailUrl(s), '_blank', 'noopener,noreferrer');
+      showToast('Archivo descargado — adjúntalo al correo que acaba de abrirse en Gmail.');
+    } catch (err) {
+      console.error('Error generando Examen:', err);
+      alert(`No se pudo generar el archivo de examen: ${(err as Error).message}`);
+    }
+  }
+
   return (
-    <div className="flex items-center gap-2 flex-shrink-0">
-      {isTrainee ? (
-        <button title="Enviar correo FOLA"
-          className={`${base} bg-[#0A29CD]/8 border-[#0A29CD]/20 text-[#0A29CD] hover:bg-[#0A29CD]/15`}
-          onClick={(e) => e.stopPropagation()}>
-          <span className="material-symbols-outlined text-[14px]">health_and_safety</span>
-          <span className="hidden sm:inline">FOLA</span>
-        </button>
-      ) : (
-        <a href={buildEpsGmailUrl(s)} target="_blank" rel="noopener noreferrer" title="Enviar correo EPS"
-          className={`${base} bg-[#0A29CD]/8 border-[#0A29CD]/20 text-[#0A29CD] hover:bg-[#0A29CD]/15`}
-          onClick={(e) => e.stopPropagation()}>
-          <span className="material-symbols-outlined text-[14px]">health_and_safety</span>
-          <span className="hidden sm:inline">EPS</span>
-        </a>
+    <>
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 bg-[#000033] text-white text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
+          <span className="material-symbols-outlined text-[#56E976] text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>attach_file</span>
+          {toast}
+        </div>
       )}
-      <a href={buildOncoGmailUrl(s)} target="_blank" rel="noopener noreferrer" title="Enviar correo Oncosalud"
-        className={`${base} bg-[#49C7FD]/10 border-[#49C7FD]/30 text-[#000033] hover:bg-[#49C7FD]/20`}
-        onClick={(e) => e.stopPropagation()}>
-        <span className="material-symbols-outlined text-[14px]">favorite</span>
-        <span className="hidden sm:inline">Onco</span>
-      </a>
-      <button
-        title={isTrainee ? 'Solo disponible para colaboradores en planilla' : 'Enviar correo Examen Ocupacional'}
-        disabled={isTrainee}
-        className={`${base} ${isTrainee ? 'bg-[#F6F5FA] border-[#B3B3C2]/30 text-[#B3B3C2] cursor-not-allowed' : 'bg-[#56E976]/10 border-[#56E976]/30 text-[#1a6b2e] hover:bg-[#56E976]/20'}`}
-        onClick={(e) => e.stopPropagation()}>
-        <span className="material-symbols-outlined text-[14px]">{isTrainee ? 'lock' : 'medical_services'}</span>
-        <span className="hidden sm:inline">Examen</span>
-      </button>
-    </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {isTrainee ? (
+          <button title="Descargar Excel FOLA y abrir correo"
+            className={`${base} bg-[#0A29CD]/8 border-[#0A29CD]/20 text-[#0A29CD] hover:bg-[#0A29CD]/15`}
+            onClick={handleFola}>
+            <span className="material-symbols-outlined text-[14px]">health_and_safety</span>
+            <span className="hidden sm:inline">FOLA</span>
+          </button>
+        ) : (
+          <a href={buildEpsGmailUrl(s)} target="_blank" rel="noopener noreferrer" title="Enviar correo EPS"
+            className={`${base} bg-[#0A29CD]/8 border-[#0A29CD]/20 text-[#0A29CD] hover:bg-[#0A29CD]/15`}
+            onClick={(e) => e.stopPropagation()}>
+            <span className="material-symbols-outlined text-[14px]">health_and_safety</span>
+            <span className="hidden sm:inline">EPS</span>
+          </a>
+        )}
+        <a href={buildOncoGmailUrl(s)} target="_blank" rel="noopener noreferrer" title="Enviar correo Oncosalud"
+          className={`${base} bg-[#49C7FD]/10 border-[#49C7FD]/30 text-[#000033] hover:bg-[#49C7FD]/20`}
+          onClick={(e) => e.stopPropagation()}>
+          <span className="material-symbols-outlined text-[14px]">favorite</span>
+          <span className="hidden sm:inline">Onco</span>
+        </a>
+        <button
+          title={isTrainee ? 'Solo disponible para colaboradores en planilla' : 'Descargar Excel Examen y abrir correo'}
+          disabled={isTrainee}
+          className={`${base} ${isTrainee ? 'bg-[#F6F5FA] border-[#B3B3C2]/30 text-[#B3B3C2] cursor-not-allowed' : 'bg-[#56E976]/10 border-[#56E976]/30 text-[#1a6b2e] hover:bg-[#56E976]/20'}`}
+          onClick={isTrainee ? (e) => e.stopPropagation() : handleExamen}>
+          <span className="material-symbols-outlined text-[14px]">{isTrainee ? 'lock' : 'medical_services'}</span>
+          <span className="hidden sm:inline">Examen</span>
+        </button>
+      </div>
+    </>
   );
 }
 
